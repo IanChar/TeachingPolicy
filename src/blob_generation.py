@@ -35,8 +35,8 @@ def get_example(is_pos, dif):
     Args:
         is_pos: Boolean for whether we want a positive or negative example.
         dif: Dificuly ranging from 0 to INTRABLOB_DIST / 2.
-    Returns: A list of the coordinates for the four control points that classify
-        the example. i.e. [x_0, y_0, x_1, y_1, ...]
+    Returns: A numpy array of the coordinates for the four control points that
+        classify the example. i.e. [x_0, y_0, x_1, y_1, ...]
     """
     coord = _get_cursor_coords(is_pos, dif)
     return _get_ctrl_pts(coord)
@@ -74,7 +74,7 @@ def _get_ctrl_pts(cursor):
     Args:
         cursor: A tuple for the x,y position of the cursor. Must be within
             CURSOR_RANGE.
-    Returns: A list of the coordinates for the four control points.
+    Returns: A numpy array of the coordinates for the four control points.
         i.e. [x_0, y_0, x_1, y_1, ...]
     """
     if cursor[0] < CURSOR_RANGE[0] or cursor[1] < CURSOR_RANGE[0]:
@@ -102,4 +102,4 @@ def _get_ctrl_pts(cursor):
 
         to_return.append((hx_rec + vx_rec) / 2)
         to_return.append((hy_rec + vy_rec) / 2)
-    return to_return
+    return np.array(to_return)
