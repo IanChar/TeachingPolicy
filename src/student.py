@@ -40,8 +40,11 @@ class Student(object):
         Returns: Boolean whether the student got the example right.
         """
         # See if the student can answer the question right.
-        guess = self._guess(ex)
-        correct = guess is is_pos
+        if self.examples:
+            guess = self._guess(ex)
+            correct = guess is is_pos
+        else:
+            correct = False
         # Add example.
         self.examples.append((is_pos, ex))
         self.record.append(correct)
@@ -67,6 +70,11 @@ class Student(object):
                 correct += 1
         return correct / total
 
+    def wipe_memory(self):
+        self.examples = []
+        self.record = []
+        self.time = 0
+
     def _guess(self, f_vec, probs=None):
         """
         Have the student make a guess at the question.
@@ -88,11 +96,13 @@ class Student(object):
                 dist = np.linalg.norm(ex - f_vec, 2)
                 heapq.heappush(heap, (dist, is_pos))
         pos_votes, neg_votes = 0, 0
-        for _ in xrange(self.k):
+        k_count = 0
+        while k_count < self.k and len(heap) > 0:
             if heapq.heappop(heap)[1]:
                 pos_votes += 1
             else:
                 neg_votes += 1
+            k_count += 1
         return pos_votes >= neg_votes
 
     def _get_remember_probs(self):
