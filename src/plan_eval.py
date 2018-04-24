@@ -5,6 +5,7 @@ some given students.
 
 from __future__ import division
 import numpy as np
+import pickle
 
 import blob_generation
 
@@ -72,7 +73,19 @@ def gen_unif_test(num_qs, filepath=None):
         dif = np.random.uniform(0, blob_generation.MAX_DIF)
         ex = blob_generation.get_example(False, dif)
         qs.append(ex)
+    if filepath is not None:
+        with open(filepath, 'wb') as f:
+            pickle.dump((qs, ans), f)
     return (qs, ans)
 
 def read_test(filepath):
-    pass
+    """
+    Read in a test given the filepath name.
+    Args:
+        filepath: The path to the file to read in.
+    Returns: (test_qs, test_ans) where test_qs is a list of feature vectors and
+        test_ans is a list of boolean answers.
+    """
+    with open(filepath, 'rb') as f:
+        read = pickle.load(f)
+        return read

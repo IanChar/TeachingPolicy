@@ -43,7 +43,12 @@ def _test_evaluate_plan():
     test_qs, test_ans = plan_eval.gen_unif_test(1000)
     print plan_eval.evaluate_plan(5, 50, students, 25, test_qs, test_ans)
 
+def _test_gen_read_test():
+    plan_eval.gen_unif_test(10, 'test.txt')
+    print plan_eval.read_test('test.txt')
+
 if __name__ == '__main__':
     # _test_get_cursor_coords()
     # _test_student()
-    _test_evaluate_plan()
+    # _test_evaluate_plan()
+    _test_gen_read_test()
