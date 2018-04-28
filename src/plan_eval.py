@@ -19,13 +19,15 @@ def evaluate_plan(alpha, beta, students, num_examples, test_qs, test_ans):
         num_examples: The number of examples to show each student.
         test_qs: List of questions for the test represented as feature vectors.
         test_ans: List of answers for the test represented as booleans.
-    Returns: The average score on the final test.
+    Returns: Tuple of the average score and variance on the final test.
     """
-    total_score = 0
+    scores = []
     for s in students:
         teach(s, alpha, beta, num_examples)
-        total_score += s.give_test(test_qs, test_ans)
-    return total_score / len(students)
+        scores.append(s.give_test(test_qs, test_ans))
+    avg_score = sum(scores) / len(students)
+    var_score = np.var(scores)
+    return (avg_score, var_score)
 
 def teach(student, alpha, beta, num_examples):
     """
@@ -89,3 +91,6 @@ def read_test(filepath):
     with open(filepath, 'rb') as f:
         read = pickle.load(f)
         return read
+
+if __name__ == '__main__':
+    gen_unif_test(100, '100test.txt')

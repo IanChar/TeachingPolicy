@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import blob_generation
 from student import Student
 import plan_eval
+import policy_evaluation
 
 def _test_get_cursor_coords():
     samples = 10000
@@ -51,4 +52,4 @@ if __name__ == '__main__':
     # _test_get_cursor_coords()
     # _test_student()
     # _test_evaluate_plan()
-    _test_gen_read_test()
+    # _test_gen_read_test()
