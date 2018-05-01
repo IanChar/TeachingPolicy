@@ -7,10 +7,12 @@ import numpy as np
 import heapq
 
 # Constants
-K = 3
-SUCCESS_PROB = 0.4
+K = 1
+SUCCESS_PROB = 0.75
 FAIL_PROB = 1
-POWER_DECREMENT = lambda p, t: p * t ** -0.5
+POWER_DECREMENT = lambda p, t: p * t ** -0.1
+
+MAX_DIST = np.sqrt(2) * 500
 
 class Student(object):
 
@@ -66,7 +68,7 @@ class Student(object):
         probs = self._get_remember_probs()
         for i in xrange(total):
             guess = self._guess(exs[i], probs)
-            if guess is are_pos[i]:
+            if guess == are_pos[i]:
                 correct += 1
         return correct / total
 
@@ -87,23 +89,19 @@ class Student(object):
         if probs is None:
             probs = self._get_remember_probs()
         num_exs = len(self.examples)
-        # Construct a min heap.
-        heap = []
+        score = 0
         for i in xrange(num_exs):
             u = np.random.uniform()
             if u <= probs[i]:
                 is_pos, ex = self.examples[i]
                 dist = np.linalg.norm(ex - f_vec, 2)
-                heapq.heappush(heap, (dist, is_pos))
-        pos_votes, neg_votes = 0, 0
-        k_count = 0
-        while k_count < self.k and len(heap) > 0:
-            if heapq.heappop(heap)[1]:
-                pos_votes += 1
-            else:
-                neg_votes += 1
-            k_count += 1
-        return pos_votes >= neg_votes
+                point_score = 1 / dist
+                if not is_pos:
+                    point_score *= -1
+                score += point_score
+        if score == 0:
+            return True if np.random.uniform() >= 0.5 else False
+        return score > 0
 
     def _get_remember_probs(self):
         """

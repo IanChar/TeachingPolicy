@@ -12,6 +12,8 @@ import plan_eval
 from student import Student
 
 TEST_PATH = '100test.txt'
+ALPHA_MAX = 100
+BETA_MAX = 100
 STUDENTS = [Student() for _ in xrange(10)]
 
 def find_best_policy(trials, alpha_0=10, beta_0=50, num_exs=25, students=None,
@@ -34,16 +36,16 @@ def find_best_policy(trials, alpha_0=10, beta_0=50, num_exs=25, students=None,
     history = []
     eval_policy = _create_evaluator(num_exs, students, test_qs, test_ans, history)
 
-    experiment = Experiment([[0, 100], [0, 100]])
+    experiment = Experiment([[0, ALPHA_MAX], [0, BETA_MAX]])
     # Run the start experiment and evaluate.
     experiment.historical_data.append_sample_points([eval_policy(alpha_0, beta_0)])
     for i in xrange(trials - 1):
         print '--------TRIAL %d DONE--------' % (i + 1)
         alpha, beta = gp_next_points(experiment)[0]
         experiment.historical_data.append_sample_points([eval_policy(alpha, beta)])
-    best = max(history)
+    best = min(history)
     if make_plot:
-        plot_history(max(history), history)
+        plot_history(min(history), history)
     return best
 
 def _create_evaluator(num_exs, students, test_qs, test_ans, history):
@@ -51,14 +53,17 @@ def _create_evaluator(num_exs, students, test_qs, test_ans, history):
     Creates function that will return SamplePoint for given alpha, beta.
     """
     def evaluator(alpha, beta):
-        avg, var = plan_eval.evaluate_plan(alpha, beta, students, num_exs,
-                                           test_qs, test_ans)
+        # avg, var = plan_eval.evaluate_plan(alpha, beta, students, num_exs,
+        #                                    test_qs, test_ans)
+        avg, var = plan_eval.teach_until_perfect(alpha, beta, students,
+                                                 test_qs, test_ans, 250, .85)
+        print alpha, beta, avg, var
         # Wipe Students memory
         for s in students:
             s.wipe_memory()
         # Since minimizes by default say score is 1 - avg
         history.append((avg, alpha, beta))
-        score = 1 - avg
+        score = avg
         return SamplePoint([alpha, beta], score, var)
     return evaluator
 
@@ -69,16 +74,18 @@ def plot_history(best, history):
         best: Best point as (score, alpha, beta).
         history: list of points of the aove form that were tried.
     """
-    scores = [np.exp(h[0]) for h in history]
+    scores = [h[0] for h in history]
     alphas = [h[1] for h in history]
     betas = [h[2] for h in history]
     plt.scatter(alphas, betas, c=scores)
     plt.plot(best[1], best[2], 'y*', markersize=12)
-    plt.xlim((0, 100))
-    plt.ylim((0, 100))
+    plt.xlabel('Alpha')
+    plt.ylabel('Beta')
+    plt.xlim((0, ALPHA_MAX))
+    plt.ylim((0, BETA_MAX))
     plt.show()
 
 
 if __name__ == '__main__':
-    best = find_best_policy(50, make_plot=True)
+    best = find_best_policy(50, num_exs=15, make_plot=True)
     print '__________BEST ANSWER: ', best, '_____________'

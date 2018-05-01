@@ -8,6 +8,32 @@ import numpy as np
 import pickle
 
 import blob_generation
+from student import Student
+
+def teach_until_perfect(alpha, beta, students, test_qs, test_ans,
+                        cut_off=float('inf'), perf_thresh=1):
+    """
+    Keep adding examples until student gets 100 on test.
+    Args:
+        alpha, beta: Parameters in alpha x + beta where x is the number of
+            correct answers minus incorrect answers.
+        students: The list of students to teach.
+        test_qs: List of questions for the test represented as feature vectors.
+        test_ans: List of answers for the test represented as booleans.
+        cut_off: Cut off for the number examples there should be.
+    """
+    num_exs = []
+    for s in students:
+        perf = False
+        count, score = 0, 0
+        while not perf and count < cut_off:
+            score = teach(s, alpha, beta, 5, score)
+            count += 5
+            if s.give_test(test_qs, test_ans) >= perf_thresh:
+                perf = True
+        num_exs.append(count)
+        print s.give_test(test_qs, test_ans)
+    return (sum(num_exs) / len(students), np.var(num_exs))
 
 def evaluate_plan(alpha, beta, students, num_examples, test_qs, test_ans):
     """
@@ -27,9 +53,10 @@ def evaluate_plan(alpha, beta, students, num_examples, test_qs, test_ans):
         scores.append(s.give_test(test_qs, test_ans))
     avg_score = sum(scores) / len(students)
     var_score = np.var(scores)
+    print alpha, beta, min(scores), max(scores), avg_score, var_score
     return (avg_score, var_score)
 
-def teach(student, alpha, beta, num_examples):
+def teach(student, alpha, beta, num_examples, start_score=None):
     """
     Teach a particular student.
     Args:
@@ -37,8 +64,10 @@ def teach(student, alpha, beta, num_examples):
             correct answers minus incorrect answers.
         students: The list of students to teach.
         num_examples: The number of examples to show each student.
+        start_score: score to start at.
+    Returns difference of correct and incorrect.
     """
-    score = 0
+    score = 0 if start_score is None else start_score
     ex_type = True
     max_dif = blob_generation.MAX_DIF
     hard_qs = (max_dif * 0.95, max_dif)
@@ -54,6 +83,7 @@ def teach(student, alpha, beta, num_examples):
         else:
             score -= 1
         ex_type = not ex_type
+    return score
 
 def gen_unif_test(num_qs, filepath=None):
     """
@@ -93,4 +123,6 @@ def read_test(filepath):
         return read
 
 if __name__ == '__main__':
-    gen_unif_test(100, '100test.txt')
+    test_qs, test_ans = read_test('100test.txt')
+    students = [Student() for _ in xrange(100)]
+    print evaluate_plan(0, 0, students, 15, test_qs, test_ans)
