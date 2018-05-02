@@ -27,12 +27,12 @@ def teach_until_perfect(alpha, beta, students, test_qs, test_ans,
         perf = False
         count, score = 0, 0
         while not perf and count < cut_off:
-            score = teach(s, alpha, beta, 5, score)
-            count += 5
+            score = teach(s, alpha, beta, 4, score)
+            count += 4
             if s.give_test(test_qs, test_ans) >= perf_thresh:
                 perf = True
         num_exs.append(count)
-        print s.give_test(test_qs, test_ans)
+        print count, s.give_test(test_qs, test_ans)
     return (sum(num_exs) / len(students), np.var(num_exs))
 
 def evaluate_plan(alpha, beta, students, num_examples, test_qs, test_ans):
@@ -51,7 +51,7 @@ def evaluate_plan(alpha, beta, students, num_examples, test_qs, test_ans):
     for s in students:
         teach(s, alpha, beta, num_examples)
         scores.append(s.give_test(test_qs, test_ans))
-    avg_score = sum(scores) / len(students)
+    avg_score = sum(scores) / len(scores)
     var_score = np.var(scores)
     print alpha, beta, min(scores), max(scores), avg_score, var_score
     return (avg_score, var_score)
@@ -63,7 +63,7 @@ def teach(student, alpha, beta, num_examples, start_score=None):
         alpha, beta: Parameters in alpha x + beta where x is the number of
             correct answers minus incorrect answers.
         students: The list of students to teach.
-        num_examples: The number of examples to show each student.
+        num_examples: The number of examples of each category to show each student.
         start_score: score to start at.
     Returns difference of correct and incorrect.
     """
@@ -72,7 +72,7 @@ def teach(student, alpha, beta, num_examples, start_score=None):
     max_dif = blob_generation.MAX_DIF
     hard_qs = (max_dif * 0.95, max_dif)
     easy_qs = (0, 0.05 * max_dif)
-    for _ in xrange(num_examples):
+    for _ in xrange(num_examples * 2):
         dif = alpha * score + beta
         dif = np.random.uniform(hard_qs[0], hard_qs[1]) if dif > 100 else dif
         dif = np.random.uniform(easy_qs[0], easy_qs[1]) if dif < 0 else dif
@@ -124,5 +124,5 @@ def read_test(filepath):
 
 if __name__ == '__main__':
     test_qs, test_ans = read_test('100test.txt')
-    students = [Student() for _ in xrange(100)]
-    print evaluate_plan(0, 0, students, 15, test_qs, test_ans)
+    students = [Student() for _ in xrange(15)]
+    print evaluate_plan(5, 20, students, 15, test_qs, test_ans)

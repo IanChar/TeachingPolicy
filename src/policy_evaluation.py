@@ -14,10 +14,43 @@ from student import Student
 TEST_PATH = '100test.txt'
 ALPHA_MAX = 100
 BETA_MAX = 100
-STUDENTS = [Student() for _ in xrange(10)]
+STUDENTS = [Student() for _ in xrange(15)]
 
-def find_best_policy(trials, alpha_0=10, beta_0=50, num_exs=25, students=None,
-                     test_path=TEST_PATH, make_plot=False):
+def find_fastest_policy(trials, alpha_0=10, beta_0=50, ex_cutoff=25, perf_thresh=0.9,
+                        students=None, test_path=TEST_PATH, make_plot=False):
+    """
+    Find the best alpha/beta for the teaching policy.
+    Args:
+        trials: Number of teaching plans to try out (including first plan).
+        alpha_0: Starting alpha.
+        beta_0: Starting beta.
+        ex_cutoff: Max number of examples to show.
+        perf_thresh: The threshold of what is considered perfect.
+        students: The students to teach, will default to STUDENTS if non given.
+        test_path: The path of the file with test qs/answers.
+        make_plot: Whether to make a scatter plot of the history.
+    Returns: The best alpha/beta found.
+    """
+    if students is None:
+        students = STUDENTS
+    test_qs, test_ans = plan_eval.read_test(test_path)
+    history = []
+    eval_policy = _create_perf_evaluator(ex_cutoff, perf_thresh, students, test_qs, test_ans, history)
+
+    experiment = Experiment([[0, ALPHA_MAX], [0, BETA_MAX]])
+    # Run the start experiment and evaluate.
+    experiment.historical_data.append_sample_points([eval_policy(alpha_0, beta_0)])
+    for i in xrange(trials - 1):
+        print '--------TRIAL %d DONE--------' % (i + 1)
+        alpha, beta = gp_next_points(experiment)[0]
+        experiment.historical_data.append_sample_points([eval_policy(alpha, beta)])
+    best = min(history)
+    if make_plot:
+        plot_history(min(history), history)
+    return best
+
+def find_accurate_policy(trials, alpha_0=10, beta_0=50, num_exs=25, students=None,
+                         test_path=TEST_PATH, make_plot=False):
     """
     Find the best alpha/beta for the teaching policy.
     Args:
@@ -43,9 +76,9 @@ def find_best_policy(trials, alpha_0=10, beta_0=50, num_exs=25, students=None,
         print '--------TRIAL %d DONE--------' % (i + 1)
         alpha, beta = gp_next_points(experiment)[0]
         experiment.historical_data.append_sample_points([eval_policy(alpha, beta)])
-    best = min(history)
+    best = max(history)
     if make_plot:
-        plot_history(min(history), history)
+        plot_history(max(history), history)
     return best
 
 def _create_evaluator(num_exs, students, test_qs, test_ans, history):
@@ -53,10 +86,25 @@ def _create_evaluator(num_exs, students, test_qs, test_ans, history):
     Creates function that will return SamplePoint for given alpha, beta.
     """
     def evaluator(alpha, beta):
-        # avg, var = plan_eval.evaluate_plan(alpha, beta, students, num_exs,
-        #                                    test_qs, test_ans)
+        avg, var = plan_eval.evaluate_plan(alpha, beta, students, num_exs,
+                                           test_qs, test_ans)
+        print alpha, beta, avg, var
+        # Wipe Students memory
+        for s in students:
+            s.wipe_memory()
+        # Since minimizes by default say score is 1 - avg
+        history.append((avg, alpha, beta))
+        score = 1 - avg
+        return SamplePoint([alpha, beta], score, var)
+    return evaluator
+
+def _create_perf_evaluator(cut_off, perf_thresh, students, test_qs, test_ans, history):
+    """
+    Creates function that will return SamplePoint for given alpha, beta.
+    """
+    def evaluator(alpha, beta):
         avg, var = plan_eval.teach_until_perfect(alpha, beta, students,
-                                                 test_qs, test_ans, 250, .85)
+                                                 test_qs, test_ans, cut_off, perf_thresh)
         print alpha, beta, avg, var
         # Wipe Students memory
         for s in students:
@@ -87,5 +135,5 @@ def plot_history(best, history):
 
 
 if __name__ == '__main__':
-    best = find_best_policy(50, num_exs=15, make_plot=True)
+    best = find_accurate_policy(1)
     print '__________BEST ANSWER: ', best, '_____________'
