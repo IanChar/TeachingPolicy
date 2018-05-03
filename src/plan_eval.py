@@ -27,12 +27,12 @@ def teach_until_perfect(alpha, beta, students, test_qs, test_ans,
         perf = False
         count, score = 0, 0
         while not perf and count < cut_off:
-            score = teach(s, alpha, beta, 4, score)
-            count += 4
+            score = teach(s, alpha, beta, 1, score)
+            count += 1
             if s.give_test(test_qs, test_ans) >= perf_thresh:
                 perf = True
         num_exs.append(count)
-        print count, s.give_test(test_qs, test_ans)
+        #print count, s.give_test(test_qs, test_ans)
     return (sum(num_exs) / len(students), np.var(num_exs))
 
 def evaluate_plan(alpha, beta, students, num_examples, test_qs, test_ans):
