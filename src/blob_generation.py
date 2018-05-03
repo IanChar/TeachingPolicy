@@ -102,4 +102,5 @@ def _get_ctrl_pts(cursor):
 
         to_return.append((hx_rec + vx_rec) / 2)
         to_return.append((hy_rec + vy_rec) / 2)
-    return np.array(to_return)
+    to_return = np.sqrt(np.array(to_return))
+    return to_return

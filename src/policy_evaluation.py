@@ -135,5 +135,5 @@ def plot_history(best, history):
 
 
 if __name__ == '__main__':
-    best = find_accurate_policy(1)
+    best = find_accurate_policy(10)
     print '__________BEST ANSWER: ', best, '_____________'

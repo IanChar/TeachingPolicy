@@ -19,9 +19,22 @@ def _test_get_cursor_coords():
             difs.append(dif)
             xs.append(x)
             ys.append(y)
-        plt.scatter(xs, ys, c=difs)
+        plt.scatter(xs, ys, c=difs, cmap='gist_heat')
+        plt.tick_params(
+                    axis='x',          # changes apply to the x-axis
+                    which='both',      # both major and minor ticks are affected
+                    bottom='off',      # ticks along the bottom edge are off
+                    top='off',         # ticks along the top edge are off
+                    labelbottom='off') # labels along the bottom edge are off
+        plt.tick_params(
+                    axis='y',          # changes apply to the x-axis
+                    which='both',      # both major and minor ticks are affected
+                    left='off',      # ticks along the bottom edge are off
+                    right='off',         # ticks along the top edge are off
+                    labelbottom='off') # labels along the bottom edge are off
         plt.xlim((450, 950))
         plt.ylim((450, 950))
+        plt.colorbar().set_label('Difficulty')
     plt.show()
 
 def _test_student():
