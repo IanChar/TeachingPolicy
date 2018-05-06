@@ -16,7 +16,7 @@ from student import Student
 TEST_PATH = '100test.txt'
 ALPHA_MAX = 50
 BETA_MAX = 50
-STUDENTS = [Student() for _ in xrange(15)]
+STUDENTS = [Student() for _ in xrange(25)]
 
 def find_fastest_policy(trials, alpha_0=10, beta_0=10, ex_cutoff=250, perf_thresh=0.93,
                         students=None, test_path=TEST_PATH, make_plot=True):
@@ -161,5 +161,5 @@ def plot_history(best, history):
 
 
 if __name__ == '__main__':
-    best = find_accurate_policy(10, num_exs=20)
+    best = find_accurate_policy(10, num_exs=20, make_plot=True)
     print '__________BEST ANSWER: ', best, '_____________'

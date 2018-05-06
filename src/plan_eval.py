@@ -7,7 +7,7 @@ from __future__ import division
 import numpy as np
 import pickle
 
-import blob_generation
+import goldstone_blobs
 from student import Student
 
 def teach_until_perfect(alpha, beta, students, test_qs, test_ans,
@@ -69,14 +69,14 @@ def teach(student, alpha, beta, num_examples, start_score=None):
     """
     score = 0 if start_score is None else start_score
     ex_type = True
-    max_dif = blob_generation.MAX_DIF
+    max_dif = goldstone_blobs.MAX_DIF
     hard_qs = (max_dif * 0.95, max_dif)
     easy_qs = (0, 0.05 * max_dif)
     for _ in xrange(num_examples * 2):
         dif = alpha * score + beta
         dif = np.random.uniform(hard_qs[0], hard_qs[1]) if dif > 100 else dif
         dif = np.random.uniform(easy_qs[0], easy_qs[1]) if dif < 0 else dif
-        ex = blob_generation.get_example(ex_type, dif)
+        ex = goldstone_blobs.get_example(ex_type, dif)
         correct = student.feed_example(ex, ex_type)
         if correct:
             score += 1
@@ -97,13 +97,13 @@ def gen_unif_test(num_qs, filepath=None):
     qs, ans = [], []
     for _ in xrange(num_qs):
         ans.append(True)
-        dif = np.random.uniform(0, blob_generation.MAX_DIF)
-        ex = blob_generation.get_example(True, dif)
+        dif = np.random.uniform(0, goldstone_blobs.MAX_DIF)
+        ex = goldstone_blobs.get_example(True, dif)
         qs.append(ex)
     for _ in xrange(num_qs):
         ans.append(False)
-        dif = np.random.uniform(0, blob_generation.MAX_DIF)
-        ex = blob_generation.get_example(False, dif)
+        dif = np.random.uniform(0, goldstone_blobs.MAX_DIF)
+        ex = goldstone_blobs.get_example(False, dif)
         qs.append(ex)
     if filepath is not None:
         with open(filepath, 'wb') as f:
@@ -123,6 +123,5 @@ def read_test(filepath):
         return read
 
 if __name__ == '__main__':
-    test_qs, test_ans = read_test('100test.txt')
-    students = [Student() for _ in xrange(15)]
-    print evaluate_plan(5, 20, students, 15, test_qs, test_ans)
+    qs, ans = read_test('100test.txt')
+    print qs[0], ans[0]
