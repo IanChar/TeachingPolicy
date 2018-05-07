@@ -5,6 +5,8 @@ https://github.com/fmfn/BayesianOptimization
 
 import numpy as np
 import matplotlib.pyplot as plt
+import heapq
+import scipy
 
 from bayes_opt import BayesianOptimization
 
@@ -14,7 +16,7 @@ from student import Student
 TEST_PATH = '100test.txt'
 ALPHA_MAX = 50
 BETA_MAX = 50
-STUDENTS = [Student() for _ in xrange(10)]
+STUDENTS = [Student() for _ in xrange(1)]
 
 def optimize(trials, alpha_0=10, beta_0=10, num_exs=15, students=None,
              test_path=TEST_PATH, make_plot=True):
@@ -39,43 +41,15 @@ def optimize(trials, alpha_0=10, beta_0=10, num_exs=15, students=None,
             float(max_val['max_params']['alpha']),
             float(max_val['max_params']['beta']))
     if make_plot:
+        print bo.gp.predict(np.array([[10, 3], [10, 5]]))
         alphas = [float(val['alpha']) for val in bo.res['all']['params']]
         betas = [float(val['beta']) for val in bo.res['all']['params']]
         vals = [float(v) for v in bo.res['all']['values']]
         hist = [(vals[i], alphas[i], betas[i]) for i in xrange(len(alphas))]
-        plot_history(best, hist)
+        plot_history(best, hist, bo)
     return best
 
-# def plot_history(best, history):
-#     """
-#     Make a scatter plot of the points that we tried and the best point.
-#     Args:
-#         best: Best point as (score, alpha, beta).
-#         history: list of points of the aove form that were tried.
-#     """
-#     scores = [h[0] for h in history]
-#     alphas = [h[1] for h in history]
-#     betas = [h[2] for h in history]
-#     a = heapq.nsmallest(3, history)
-#     xi, yi = np.linspace(0, ALPHA_MAX, 500), np.linspace(0, BETA_MAX, 500)
-#     xi, yi = np.meshgrid(xi, yi)
-#     xo=alphas
-#     yo=betas
-#     ao=scores
-#     rbf = scipy.interpolate.Rbf(xo, yo, ao, function='linear')
-#     ai = rbf(xi, yi)
-#     plt.imshow(ai, vmin=min(ao), vmax=max(ao), origin='lower', extent=[0, ALPHA_MAX, 0, BETA_MAX], cmap='inferno')
-#     plt.scatter(xo, yo, facecolors='none', edgecolors='green')
-#     plt.plot(a[0][1], a[0][2], 'y*', markersize=12, color='gold')
-#     plt.plot(a[1][1], a[1][2], 'y*', markersize=12, color='silver')
-#     plt.plot(a[2][1], a[2][2], 'y*', markersize=12, color='brown')
-#     plt.xlabel('Alpha')
-#     plt.ylabel('Beta')
-#     plt.xlim((0, ALPHA_MAX))
-#     plt.ylim((0, BETA_MAX))
-#     plt.show()
-
-def plot_history(best, history):
+def plot_history(best, history, bo):
     """
     Make a scatter plot of the points that we tried and the best point.
     Args:
@@ -85,8 +59,23 @@ def plot_history(best, history):
     scores = [h[0] for h in history]
     alphas = [h[1] for h in history]
     betas = [h[2] for h in history]
-    plt.scatter(alphas, betas, c=scores)
-    plt.plot(best[1], best[2], 'y*', markersize=12)
+    a = heapq.nsmallest(3, history)
+    xi, yi = np.linspace(0, ALPHA_MAX, 500), np.linspace(0, BETA_MAX, 500)
+    xi, yi = np.meshgrid(xi, yi)
+    xo=alphas
+    yo=betas
+    pts = np.zeros((500, 2))
+    pts[:, 0] = np.transpose(xo)
+    pts[:, 1] = np.transpose(xo)
+    a0 = bo.gp.predict(pts)
+    ao=scores
+    rbf = scipy.interpolate.Rbf(xo, yo, ao, function='linear')
+    ai = rbf(xi, yi)
+    plt.imshow(ai, vmin=min(ao), vmax=max(ao), origin='lower', extent=[0, ALPHA_MAX, 0, BETA_MAX], cmap='inferno')
+    plt.scatter(xo, yo, facecolors='none', edgecolors='green')
+    plt.plot(a[0][1], a[0][2], 'y*', markersize=12, color='gold')
+    plt.plot(a[1][1], a[1][2], 'y*', markersize=12, color='silver')
+    plt.plot(a[2][1], a[2][2], 'y*', markersize=12, color='brown')
     plt.xlabel('Alpha')
     plt.ylabel('Beta')
     plt.xlim((0, ALPHA_MAX))
@@ -94,4 +83,4 @@ def plot_history(best, history):
     plt.show()
 
 if __name__ == '__main__':
-    optimize(20)
+    optimize(1)
