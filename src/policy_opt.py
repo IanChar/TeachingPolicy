@@ -62,14 +62,14 @@ def plot_history(best, history, bo):
     a = heapq.nsmallest(3, history)
     xi, yi = np.linspace(0, ALPHA_MAX, 500), np.linspace(0, BETA_MAX, 500)
     xi, yi = np.meshgrid(xi, yi)
-    xo=alphas
-    yo=betas
-    pts = np.zeros((500, 2))
-    pts[:, 0] = np.transpose(xo)
-    pts[:, 1] = np.transpose(xo)
-    a0 = bo.gp.predict(pts)
-    ao=scores
-    rbf = scipy.interpolate.Rbf(xo, yo, ao, function='linear')
+    pts = np.zeros((10 ** 2, 2))
+    ind = 0
+    for x in np.linspace(0, ALPHA_MAX, 10):
+        for y in np.linspace(0, BETA_MAX, 10):
+            pts[ind,:] = [x, y]
+            ind += 1
+    ao = bo.gp.predict(pts)
+    rbf = scipy.interpolate.Rbf(pts[:,0], pts[:,1], ao, function='linear')
     ai = rbf(xi, yi)
     plt.imshow(ai, vmin=min(ao), vmax=max(ao), origin='lower', extent=[0, ALPHA_MAX, 0, BETA_MAX], cmap='inferno')
     plt.scatter(xo, yo, facecolors='none', edgecolors='green')
