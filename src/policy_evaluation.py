@@ -1,4 +1,5 @@
 """
+DEPRECATED!!!
 Use Gaussian Processes to find optimum teaching policy.
 """
 
@@ -131,16 +132,6 @@ def plot_history(best, history):
     alphas = [h[1] for h in history]
     betas = [h[2] for h in history]
     a = heapq.nsmallest(3, history)
-    # plt.scatter(alphas, betas, c=scores, cmap='inferno')
-    # plt.plot(a[0][1], a[0][2], 'y*', markersize=12, color='gold')
-    # plt.plot(a[1][1], a[1][2], 'y*', markersize=12, color='silver')
-    # plt.plot(a[2][1], a[2][2], 'y*', markersize=12, color='brown')
-    # plt.xlabel('Alpha')
-    # plt.ylabel('Beta')
-    # plt.xlim((0, ALPHA_MAX))
-    # plt.ylim((0, BETA_MAX))
-    # plt.show()
-
     xi, yi = np.linspace(0, ALPHA_MAX, 500), np.linspace(0, BETA_MAX, 500)
     xi, yi = np.meshgrid(xi, yi)
     xo=alphas
