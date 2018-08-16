@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import heapq
 import scipy
+import scipy.interpolate
 
 from bayes_opt import BayesianOptimization
 
@@ -20,37 +21,19 @@ STUDENTS = [Student() for _ in xrange(1)]
 
 def optimize(trials, alpha_0=10, beta_0=10, num_exs=15, students=None,
              test_path=TEST_PATH, make_plot=True):
-    if students is None:
-        students = STUDENTS
-    test_qs, test_ans = plan_eval.read_test(test_path)
-    def target_func(alpha, beta):
-        avg, var = plan_eval.evaluate_plan(alpha, beta, students, num_exs,
-                                           test_qs, test_ans)
-        # Wipe Students memory
-        for s in students:
-            s.wipe_memory()
-        return avg
-    # Do Bayes' optimization.
-    bo = BayesianOptimization(target_func, {'alpha': (0, ALPHA_MAX),
-                                            'beta': (0, BETA_MAX)})
-    bo.explore({'alpha': [alpha_0], 'beta': [beta_0]})
-    bo.maximize(init_points=5, n_iter=trials, acq='ucb', kappa=2)
-
-    max_val = bo.res['max']
-    best = (float(max_val['max_val']),
-            float(max_val['max_params']['alpha']),
-            float(max_val['max_params']['beta']))
-    if make_plot:
-        print bo.gp.predict(np.array([[10, 3], [10, 5]]))
-        alphas = [float(val['alpha']) for val in bo.res['all']['params']]
-        betas = [float(val['beta']) for val in bo.res['all']['params']]
-        vals = [float(v) for v in bo.res['all']['values']]
-        hist = [(vals[i], alphas[i], betas[i]) for i in xrange(len(alphas))]
-        plot_history(best, hist, bo)
-    return best
-
-def optimize(trials, alpha_0=10, beta_0=10, num_exs=15, students=None,
-             test_path=TEST_PATH, make_plot=True):
+    """
+    Find the optimal teaching plan that maximizes student scores for a set
+    number of examples. Prints out optimal [alpha, beta] in terminal.
+    Args:
+        trials: The number of teaching plans to try out after init_points.
+        alpha_0: The first alpha to try.
+        beta_0: The first beta to try.
+        num_exs: The number of positive and negative examples to show students.
+        students: List of student objects to teach where the average score
+            among students is considered.
+        test_path: The file path for the test to consider.
+        make_plot: Whether to make a plot of the results.
+    """
     if students is None:
         students = STUDENTS
     test_qs, test_ans = plan_eval.read_test(test_path)
@@ -83,6 +66,20 @@ def optimize(trials, alpha_0=10, beta_0=10, num_exs=15, students=None,
 def optimize_fastest(trials, alpha_0=10, beta_0=10, ex_cutoff=25,
                      perf_thresh=0.8,students=None, test_path=TEST_PATH,
                      make_plot=True):
+    """
+    Find the optimal teaching policy that will reach a threshold of performance
+    with the least amount of examples.
+    Args:
+        trials: The number of teaching plans to try out after init_points.
+        alpha_0: The first alpha to try.
+        beta_0: The first beta to try.
+        ex_cutoff: The maximum number of examples to try.
+        perf_thresh: The performance threshold to achieve.
+        students: List of student objects to teach where the average score
+            among students is considered.
+        test_path: The file path for the test to consider.
+        make_plot: Whether to make a plot of the results.
+    """
     if students is None:
         students = STUDENTS
     test_qs, test_ans = plan_eval.read_test(test_path)
@@ -148,4 +145,4 @@ def plot_history(best, history, bo):
     plt.show()
 
 if __name__ == '__main__':
-    optimize_fastest(5)
+    optimize(5)

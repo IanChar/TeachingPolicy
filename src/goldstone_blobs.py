@@ -24,7 +24,7 @@ PROTOS = np.array([[0.1, 7 * np.pi / 8, 1, 2, 3, 4, 5, 6, 7, 8],
                    [1.7, 14 * np.pi / 8, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
                    [0.8, 3 * np.pi / 2, 2/3, 4/3, 6/3, 8/3, 10/3, 12/3, 14/3, 16/3]])
 
-def get_example(is_pos, dificulty, num_samps=36, make_plot=False):
+def get_example(is_pos, dificulty, num_samps=36):
     """
     Get a blob example.
     Args:
@@ -37,7 +37,7 @@ def get_example(is_pos, dificulty, num_samps=36, make_plot=False):
     params1 = _interp_params(PROTOS[0, :], PROTOS[1, :], coords[0] / 100)
     params2 = _interp_params(PROTOS[2, :], PROTOS[3, :], coords[0] / 100)
     params = _interp_params(params1, params2, coords[1] / 100)
-    pts = gen_blob(params, num_samps, make_plot)
+    pts = gen_blob(params, num_samps)
     pts = pts.ravel()
     return pts
 

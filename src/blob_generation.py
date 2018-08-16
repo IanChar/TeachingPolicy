@@ -1,4 +1,5 @@
 """
+DEPRECATED
 Contains utility function to draw examples of blobs.
 
 Because everything is done as Bezier curves, we classify each blob using its
