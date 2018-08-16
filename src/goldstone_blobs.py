@@ -3,6 +3,8 @@ Code for Goldstone blob generation inspired by Mike Mozer's code.
 """
 from __future__ import division
 import numpy as np
+from matplotlib.path import Path
+import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 
 # Constants
@@ -39,7 +41,7 @@ def get_example(is_pos, dificulty, num_samps=36, make_plot=False):
     pts = pts.ravel()
     return pts
 
-def gen_blob(params, num_samps, make_plot=False):
+def gen_blob(params, num_samps, ax=None):
     """
     Generate the blob based on given params.
     Args:
@@ -63,8 +65,14 @@ def gen_blob(params, num_samps, make_plot=False):
         points[i,:] = [np.sin(ANGLES[i]) * mag, np.cos(ANGLES[i]) * mag]
         max_mag = max([mag, max_mag])
     points /= max_mag
-    if make_plot:
-        plt.scatter(points[:, 0], points[:, 1])
+    if ax is not None:
+        codes = [Path.MOVETO]
+        for _ in xrange(points.shape[0] - 2):
+            codes.append(Path.LINETO)
+        codes.append(Path.CLOSEPOLY)
+        path = Path(points, codes)
+        patch = patches.PathPatch(path, facecolor='red', lw=2)
+        ax.add_patch(patch)
 
     spacing = int(TOTAL_POINTS / num_samps)
     to_return = np.zeros((num_samps, 2))
@@ -113,7 +121,7 @@ def _get_cursor_coords(is_pos, dif):
             CURSOR_RANGE[is_pos] + y_dif)
 
 def plot_in_between():
-    plt.figure(1)
+    fig = plt.figure(1)
     i = 1
     for xdim in xrange(0, 101, 25):
         for ydim in xrange(0, 101, 25):
@@ -121,30 +129,26 @@ def plot_in_between():
             params1 = _interp_params(PROTOS[0, :], PROTOS[1, :], coords[0] / 100)
             params2 = _interp_params(PROTOS[2, :], PROTOS[3, :], coords[0] / 100)
             params = _interp_params(params1, params2, coords[1] / 100)
-            plt.subplot(5, 5, i)
-            gen_blob(params, 36, True)
-            plt.tick_params(
-                        axis='x',          # changes apply to the x-axis
-                        which='both',      # both major and minor ticks are affected
-                        bottom='off',      # ticks along the bottom edge are off
-                        top='off',         # ticks along the top edge are off
-                        labelbottom='off') # labels along the bottom edge are off
-            plt.tick_params(
-                        axis='y',          # changes apply to the x-axis
-                        which='both',      # both major and minor ticks are affected
-                        left='off',      # ticks along the bottom edge are off
-                        right='off',         # ticks along the top edge are off
-                        labelbottom='off') # labels along the bottom edge are off
+            ax = fig.add_subplot(5, 5, i)
+            gen_blob(params, 36, ax)
+            ax.set_xlim((-1, 1))
+            ax.set_ylim((-1, 1))
+            ax.set_yticklabels([])
+            ax.set_xticklabels([])
             i += 1
     plt.show()
 
+def plot_protos():
+    fig = plt.figure(1)
+    posns = [221, 222, 223, 224]
+    for plot_num in xrange(4):
+        ax = fig.add_subplot(posns[plot_num])
+        gen_blob(PROTOS[plot_num,:], 1, ax)
+        ax.set_xlim((-1, 1))
+        ax.set_ylim((-1, 1))
+        ax.set_yticklabels([])
+        ax.set_xticklabels([])
+    plt.show()
+
 if __name__ == '__main__':
-    # print get_example(True, 50, make_plot=True)
-    # plt.show()
-    # plt.figure(1)
-    # posns = [221, 222, 223, 224]
-    # for plot_num in xrange(4):
-    #     plt.subplot(posns[plot_num])
-    #     gen_blob(PROTOS[plot_num,:], 36, True)
-    # plt.show()
     plot_in_between()
