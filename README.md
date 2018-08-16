@@ -9,6 +9,8 @@ Use Bayesian optimization to find the best teaching policy.
 pip install bayesian-optimization
 ```
 
+Also requires scipy, numpy, matplotlib, pickle.
+
 ## Running Simulations
 
 #### Generating test set
