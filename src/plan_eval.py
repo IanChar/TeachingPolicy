@@ -123,5 +123,4 @@ def read_test(filepath):
         return read
 
 if __name__ == '__main__':
-    qs, ans = read_test('100test.txt')
-    print qs[0], ans[0]
+    gen_unif_test(100, '100test.txt')
